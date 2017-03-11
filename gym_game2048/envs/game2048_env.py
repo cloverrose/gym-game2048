@@ -35,7 +35,8 @@ class Game2048Env(gym.Env):
     def _step(self, action):
         space_to_func = [Game2048Env.left, Game2048Env.right, Game2048Env.up, Game2048Env.down]
         equal_flag, next_grid, acquire_score = space_to_func[action](self.grid)
-        self.grid = Game2048Env.add_new_tile(next_grid)
+        if not equal_flag:
+            self.grid = Game2048Env.add_new_tile(next_grid)
         self.score += acquire_score
         return self.grid, acquire_score, Game2048Env._is_done(self.grid), {}
 
