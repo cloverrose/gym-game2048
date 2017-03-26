@@ -31,14 +31,29 @@ class Game2048Env(gym.Env):
         self.observation_space = spaces.MultiDiscrete(
             [[Game2048Env.real_to_space[0], Game2048Env.real_to_space[2048]] for _ in range(Game2048Env.size * Game2048Env.size)])
         self._setup()
+        self.illegal_move_mode = 'lose'
 
     def _step(self, action):
         space_to_func = [Game2048Env.left, Game2048Env.right, Game2048Env.up, Game2048Env.down]
         equal_flag, next_grid, acquire_score = space_to_func[action](self.grid)
         if not equal_flag:
-            self.grid = Game2048Env.add_new_tile(next_grid)
-        self.score += acquire_score
-        return self.grid, acquire_score, Game2048Env._is_done(self.grid), {}
+            self.grid = next_grid
+            self.score += acquire_score
+            if Game2048Env._is_complete(self.grid):
+                return self.grid, 1.0, True, {}
+            elif Game2048Env._is_done(self.grid):
+                return self.grid, -1.0, True, {}
+            else:
+                self.grid = Game2048Env.add_new_tile(self.grid)
+                if Game2048Env._is_done(self.grid):
+                    return self.grid, -1.0, True, {}
+                else:
+                    return self.grid, 0.0, False, {}
+        else:
+            if self.illegal_move_mode == 'lose':
+                return self.grid, -1.0, True, {}
+            elif self.illegal_move_mode == 'continue':
+                raise Exception("invalid action")
 
     def _reset(self):
         self._setup()
@@ -52,11 +67,12 @@ class Game2048Env(gym.Env):
             print ' '.join(map(str, row))
 
     @staticmethod
+    def _is_complete(grid):
+        return np.any(grid == Game2048Env.real_to_space[32])
+
+    @staticmethod
     def _is_done(grid):
-        if len(np.where(grid == Game2048Env.real_to_space[2048])[0]) > 0:
-            # complete
-            return True
-        if len(np.where(grid == Game2048Env.real_to_space[0])[0]) > 0:
+        if np.any(grid == Game2048Env.real_to_space[0]):
             return False
         l_flg, l_grid, l_score = Game2048Env.left(grid)
         if not l_flg:
@@ -100,7 +116,7 @@ class Game2048Env(gym.Env):
                     j += 1
                 if b == a:
                     buff.append(a + 1)
-                    score += (Game2048Env.space_to_real[a + 1])
+                    score += Game2048Env.space_to_real[a + 1]
                     i = j + 1
                 else:
                     buff.append(a)
