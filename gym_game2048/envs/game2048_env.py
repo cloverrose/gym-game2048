@@ -34,6 +34,10 @@ class Game2048Env(gym.Env):
         self.illegal_move_mode = 'lose'
 
     def _step(self, action):
+        state, reward, done, info = self.mystep(action)
+        return np.reshape(state, Game2048Env.size ** 2), reward, done, info
+
+    def mystep(self, action):
         space_to_func = [Game2048Env.left, Game2048Env.right, Game2048Env.up, Game2048Env.down]
         equal_flag, next_grid, acquire_score = space_to_func[action](self.grid)
         if not equal_flag:
@@ -57,7 +61,7 @@ class Game2048Env(gym.Env):
 
     def _reset(self):
         self._setup()
-        return self.grid
+        return np.reshape(self.grid, Game2048Env.size ** 2)
 
     def _render(self, mode='human', close=False):
         print '-' * 80
@@ -68,7 +72,7 @@ class Game2048Env(gym.Env):
 
     @staticmethod
     def _is_complete(grid):
-        return np.any(grid == Game2048Env.real_to_space[32])
+        return np.any(grid == Game2048Env.real_to_space[2048])
 
     @staticmethod
     def _is_done(grid):
