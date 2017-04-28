@@ -41,24 +41,28 @@ class Game2048Env(gym.Env):
         space_to_func = [Game2048Env.left, Game2048Env.right, Game2048Env.up, Game2048Env.down]
         equal_flag, next_grid, acquire_score = space_to_func[action](self.grid)
         if not equal_flag:
+            prev_max = self.grid.max()
             self.grid = next_grid
             self.score += acquire_score
-            # 2048ができたら1.0それ以外でも大きい数字ができていたらその点数
-            achievement = float(Game2048Env.space_to_real[self.grid.max()]) / 2048
+            current_max = self.grid.max()
+            if current_max > prev_max:
+                # 2048ができたら1.0それ以外でも大きい数字ができていたらその点数
+                reward = float(Game2048Env.space_to_real[current_max]) / 2048
+            else:
+                reward = 0.0
             if Game2048Env._is_complete(self.grid):
-                return self.grid, 1.0, True, {}
+                return self.grid, reward, True, {}
             elif Game2048Env._is_done(self.grid):
-                return self.grid, achievement, True, {}
+                return self.grid, reward, True, {}
             else:
                 self.grid = Game2048Env.add_new_tile(self.grid)
                 if Game2048Env._is_done(self.grid):
-                    return self.grid, achievement, True, {}
+                    return self.grid, reward, True, {}
                 else:
-                    return self.grid, 0.0, False, {}
+                    return self.grid, reward, False, {}
         else:
-            achievement = float(Game2048Env.space_to_real[self.grid.max()]) / 2048
             if self.illegal_move_mode == 'lose':
-                return self.grid, achievement, True, {}
+                return self.grid, -1.0, True, {}
             elif self.illegal_move_mode == 'continue':
                 raise Exception("invalid action")
 
