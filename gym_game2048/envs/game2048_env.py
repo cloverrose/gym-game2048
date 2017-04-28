@@ -56,8 +56,9 @@ class Game2048Env(gym.Env):
                 else:
                     return self.grid, 0.0, False, {}
         else:
+            achievement = float(self.grid.max()) / Game2048Env.real_to_space[2048]
             if self.illegal_move_mode == 'lose':
-                return self.grid, -0.1, False, {}
+                return self.grid, achievement, True, {}
             elif self.illegal_move_mode == 'continue':
                 raise Exception("invalid action")
 
