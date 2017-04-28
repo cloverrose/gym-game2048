@@ -43,14 +43,16 @@ class Game2048Env(gym.Env):
         if not equal_flag:
             self.grid = next_grid
             self.score += acquire_score
+            # 2048ができたら1.0それ以外でも大きい数字ができていたらその点数
+            achievement = float(self.grid.max()) / Game2048Env.real_to_space[2048]
             if Game2048Env._is_complete(self.grid):
                 return self.grid, 1.0, True, {}
             elif Game2048Env._is_done(self.grid):
-                return self.grid, -1.0, True, {}
+                return self.grid, achievement, True, {}
             else:
                 self.grid = Game2048Env.add_new_tile(self.grid)
                 if Game2048Env._is_done(self.grid):
-                    return self.grid, -1.0, True, {}
+                    return self.grid, achievement, True, {}
                 else:
                     return self.grid, 0.0, False, {}
         else:
