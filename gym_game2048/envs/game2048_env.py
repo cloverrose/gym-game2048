@@ -57,7 +57,7 @@ class Game2048Env(gym.Env):
                     return self.grid, 0.0, False, {}
         else:
             if self.illegal_move_mode == 'lose':
-                return self.grid, -1.0, True, {}
+                return self.grid, -0.1, False, {}
             elif self.illegal_move_mode == 'continue':
                 raise Exception("invalid action")
 
