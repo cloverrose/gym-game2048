@@ -41,25 +41,18 @@ class Game2048Env(gym.Env):
         space_to_func = [Game2048Env.left, Game2048Env.right, Game2048Env.up, Game2048Env.down]
         equal_flag, next_grid, acquire_score = space_to_func[action](self.grid)
         if not equal_flag:
-            prev_max = self.grid.max()
             self.grid = next_grid
             self.score += acquire_score
-            current_max = self.grid.max()
-            if current_max > prev_max:
-                # 2048ができたら1.0それ以外でも大きい数字ができていたらその点数
-                reward = float(Game2048Env.space_to_real[current_max]) / 2048
-            else:
-                reward = 0.0
             if Game2048Env._is_complete(self.grid):
-                return self.grid, reward, True, {}
+                return self.grid, acquire_score, True, {}
             elif Game2048Env._is_done(self.grid):
-                return self.grid, reward, True, {}
+                return self.grid, acquire_score, True, {}
             else:
                 self.grid = Game2048Env.add_new_tile(self.grid)
                 if Game2048Env._is_done(self.grid):
-                    return self.grid, reward, True, {}
+                    return self.grid, acquire_score, True, {}
                 else:
-                    return self.grid, reward, False, {}
+                    return self.grid, acquire_score, False, {}
         else:
             if self.illegal_move_mode == 'lose':
                 return self.grid, -1.0, True, {}
